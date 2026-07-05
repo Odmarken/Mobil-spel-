@@ -136,16 +136,17 @@
   #startBtn{margin-top:20px;padding:14px;border-radius:11px;border:1px solid var(--brass);background:linear-gradient(180deg,var(--brass),var(--brass-deep));color:#20180a;font-family:var(--display);font-size:16px;letter-spacing:1px;cursor:pointer}
   .fineprint{font-size:10px;color:#5c7263;margin-top:12px;line-height:1.5}
  
-  #select{position:absolute;inset:0;z-index:60;display:none;flex-direction:column;padding:26px 22px 18px;overflow-y:auto;
+  #select,#login{position:absolute;inset:0;z-index:60;display:none;flex-direction:column;padding:26px 22px 18px;overflow-y:auto;
     background:
       radial-gradient(ellipse 120% 55% at 50% -8%, #f4c86a22, transparent 60%),
       radial-gradient(ellipse 90% 40% at 80% 8%, #d9a44126, transparent 55%),
       radial-gradient(ellipse 140% 60% at 50% 108%, #0b1410, #131f1a 70%),
       linear-gradient(180deg,#233a2c,#131f1a 55%);
   }
-  #select.open{display:flex}
-  #select h1{font-family:var(--display);font-size:27px;color:var(--parch);text-shadow:0 2px 12px rgba(217,164,65,.25)}
-  #select .tag{color:var(--dim);font-size:12px;margin:4px 0 16px;letter-spacing:1.5px;text-transform:uppercase}
+  #login{z-index:62;justify-content:center}
+  #select.open,#login.open{display:flex}
+  #select h1,#login h1{font-family:var(--display);font-size:27px;color:var(--parch);text-shadow:0 2px 12px rgba(217,164,65,.25)}
+  #select .tag,#login .tag{color:var(--dim);font-size:12px;margin:4px 0 16px;letter-spacing:1.5px;text-transform:uppercase}
   .charcard{display:flex;align-items:center;gap:12px;background:rgba(28,43,36,.88)}
   .charcard .portrait{width:64px;height:76px;border-radius:9px;flex:0 0 auto}
   .cinfo{flex:1;min-width:0}
@@ -179,6 +180,15 @@
   @keyframes chestp{from{transform:translate(-50%,-50%) rotate(0);opacity:1}to{transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) rotate(320deg);opacity:0}}
   @keyframes epicFlash{0%{background:rgba(200,150,255,.35)}100%{background:rgba(5,10,8,.84)}}
   #chestFx.flash{animation:epicFlash .6s ease-out}
+ 
+  .acctin{width:100%;padding:9px 11px;border-radius:8px;border:1px solid var(--line);background:rgba(19,31,26,.9);color:var(--parch);font-size:13px;margin-top:6px}
+  #lbFx{position:absolute;inset:0;z-index:75;display:none;flex-direction:column;background:rgba(5,10,8,.94);padding:20px}
+  #lbFx.open{display:flex}
+  .lbrow{display:flex;align-items:center;gap:10px;padding:8px 10px;border-bottom:1px solid var(--line);font-size:12.5px}
+  .lbrow.me{background:rgba(217,164,65,.08);border-radius:8px}
+  .lbrank{width:26px;color:var(--brass);font-family:var(--display);font-size:13px}
+  .lbname{flex:1;color:var(--parch);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .lbmeta{color:var(--dim);font-size:11px;white-space:nowrap}
 </style>
 </head>
 <body>
@@ -187,9 +197,35 @@
   <div id="select">
     <h1>Eastvale Legion</h1>
     <div class="tag">Choose your champion</div>
+    <div class="card" style="background:rgba(28,43,36,.7)" id="acctBar">
+      <div class="cl" id="acctInfo" style="margin:0 0 8px">Playing locally.</div>
+      <div id="acctForms" style="display:none;margin-bottom:8px">
+        <input class="acctin" id="fbEmail" placeholder="email" autocomplete="off">
+        <input class="acctin" id="fbPass" type="password" placeholder="password">
+        <div style="display:flex;gap:6px;margin-top:8px">
+          <button class="sbtn gold" id="fbLogin">Sign in</button>
+          <button class="sbtn" id="fbSignup">Create account</button>
+        </div>
+        <div class="cl" id="fbErr" style="color:#ff8a7a;margin-top:6px"></div>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <button class="sbtn gold" id="fbToggle">☁ Sign in / Register</button>
+        <button class="sbtn" id="fbOut" style="display:none">Sign out</button>
+        <button class="sbtn gold" id="lbBtn">🏆 Leaderboard</button>
+      </div>
+    </div>
     <div id="charList"></div>
     <button id="newCharBtn">＋ Create New Character</button>
-    <div class="fineprint">Every hero keeps their own save — progression, bags and gear are fully separate. Reach level 60 to unlock Prestige and march the realm again against harder foes.</div>
+    <div class="fineprint">Every hero keeps their own save — progression, bags and gear are fully separate. Sign in to sync heroes to the cloud. Reach level 60 to unlock Prestige and march the realm again against harder foes.</div>
+  </div>
+ 
+  <div id="lbFx">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <div class="ptitle" style="margin:0">🏆 Champions of Eastvale</div>
+      <button class="sbtn" id="lbClose">Close</button>
+    </div>
+    <div class="cl" style="margin-bottom:10px">Publishing to the board shares your hero's name, level, prestige and gear score publicly.</div>
+    <div id="lbList" style="overflow-y:auto;flex:1"></div>
   </div>
  
   <div id="create">
@@ -201,7 +237,7 @@
     <label>Bloodline</label><div class="pickgrid" id="racePick"></div>
     <label>Calling — each has 3 spells</label><div class="pickgrid" id="classPick"></div>
     <button id="startBtn">March East ⚔</button>
-    <div class="fineprint">Move with WASD / tap the ground · tap a foe to attack · spells 1/2/3, potions 4/5 · scrap unwanted gear for ⚙ Scraps and upgrade your equipment · visit the Trader to buy powerful scrolls. Sound starts after your first tap. Progress saves on this device.</div>
+    <div class="fineprint">Move with WASD / tap the ground · tap a foe to attack · spells 1/2/3, potions 4/5 · scrap unwanted gear for ⚙ Scraps and upgrade your equipment · hunt rare scrolls and combine duplicates to forge stronger tiers. Sound starts after your first tap. Progress saves on this device.</div>
   </div>
  
   <header>
@@ -252,6 +288,7 @@
     <div id="prestigeSec"></div>
     <div class="card toggle-row"><span>Auto-equip stronger gear</span><button class="sbtn gold" id="autoEquipBtn">On</button></div>
     <div class="card toggle-row"><span>Play a different hero</span><button class="sbtn gold" id="charSelBtn">⇄ Change Character</button></div>
+    <div class="card toggle-row"><span>Global rankings</span><button class="sbtn gold" id="lbBtn2">🏆 Leaderboard</button></div>
   </div>
  
   <div class="panel" id="p-map">
@@ -327,19 +364,25 @@ const CLASSES=[
    {n:'Renew',g:'💚',cost:20,cd:12,t:'hot',hot:.05,dur:6,d:'Heal 5% of max health per second for 6s.',vfx:'renew'},
   ]},
 ];
-/* 10 scrolls — each with a unique aura glow and a shop price */
+/* 10 scrolls — tiered. Base effects are weak; combine two identical scrolls to
+   forge the next tier (I → IV), doubling the effect each time. */
+const TIERN=['I','II','III','IV'];
+const MAXTIER=4;
 const ENCHS=[
- {id:'mending',slot:'armor',n:'Scroll of Mending',d:'Regenerate 1% max health every second.',glow:'#7ae08a',price:900},
- {id:'warding',slot:'armor',n:'Scroll of Warding',d:'Take 12% less damage.',glow:'#8fb0d0',price:1200},
- {id:'thorns',slot:'armor',n:'Scroll of Thorns',d:'Reflect 25% of damage taken back at foes.',glow:'#9adf9a',price:1000},
- {id:'reaper',slot:'weapon',n:'Scroll of the Reaper',d:'Heal 5% of max health on every kill.',glow:'#c86a6a',price:1400},
- {id:'flames',slot:'weapon',n:'Scroll of Flames',d:'Attacks burn for 15% bonus fire damage.',glow:'#ff9a4a',price:1300},
- {id:'frostbite',slot:'weapon',n:'Scroll of Biting Frost',d:'Attacks chill foes, slowing them briefly.',glow:'#a0e0ff',price:850},
- {id:'titan',slot:'weapon',n:'Scroll of the Colossus',d:'+10% attack damage.',glow:'#e8b070',price:2000},
- {id:'clarity',slot:'trinket',n:'Scroll of Clarity',d:'+60% mana regeneration.',glow:'#8fa8ef',price:900},
- {id:'swiftness',slot:'trinket',n:'Scroll of Swiftness',d:'+12% movement and attack speed.',glow:'#d8f2ff',price:1500},
- {id:'fortune',slot:'trinket',n:'Scroll of Fortune',d:'+25% gold from kills.',glow:'#ffd76a',price:1600},
+ {id:'mending',n:'Scroll of Mending',base:0.5,glow:'#7ae08a',d:v=>`Regenerate ${v}% max health every second.`},
+ {id:'warding',n:'Scroll of Warding',base:3,glow:'#8fb0d0',d:v=>`Take ${v}% less damage.`},
+ {id:'thorns',n:'Scroll of Thorns',base:8,glow:'#9adf9a',d:v=>`Reflect ${v}% of damage taken back at foes.`},
+ {id:'reaper',n:'Scroll of the Reaper',base:2,glow:'#c86a6a',d:v=>`Heal ${v}% of max health on every kill.`},
+ {id:'flames',n:'Scroll of Flames',base:5,glow:'#ff9a4a',d:v=>`Attacks burn for ${v}% bonus fire damage.`},
+ {id:'frostbite',n:'Scroll of Biting Frost',base:0.5,glow:'#a0e0ff',d:v=>`Attacks chill foes, slowing them for ${v}s.`},
+ {id:'titan',n:'Scroll of the Colossus',base:3,glow:'#e8b070',d:v=>`+${v}% attack damage.`},
+ {id:'clarity',n:'Scroll of Clarity',base:20,glow:'#8fa8ef',d:v=>`+${v}% mana regeneration.`},
+ {id:'swiftness',n:'Scroll of Swiftness',base:4,glow:'#d8f2ff',d:v=>`+${v}% movement and attack speed.`},
+ {id:'fortune',n:'Scroll of Fortune',base:8,glow:'#ffd76a',d:v=>`+${v}% gold from kills.`},
 ];
+const enchOf=id=>ENCHS.find(e=>e.id===id);
+const tierVal=(id,t)=>enchOf(id).base*Math.pow(2,(t||1)-1);
+const tierDesc=(id,t)=>enchOf(id).d(parseFloat(tierVal(id,t).toFixed(2)));
 /* 15 maps: pattern zone, zone, BOSS arena — up to level 60. */
 const ZONES=[
  {name:'Willowmere Fields',lvl:1,amb:'meadow',ground:'#7aa356',ground2:'#6e9750',water:'#4a86a8',tree:'#4f7d3e',tree2:'#3c6330',path:'#b09a6a',
@@ -384,9 +427,11 @@ const eATK=L=>Math.round(3+L*1.1);
 function zoneTemplates(z){
  const pm=pMul(),pr=pRew();
  if(z.boss){
-  return [{name:z.boss[0],kind:'boss',boss:true,bossId:z.boss[2],c:z.boss[1],hp:Math.round(eHP(z.lvl)*22*pm),atk:Math.round(eATK(z.lvl)*1.6*pm),xp:Math.round(eHP(z.lvl)*3*pr),gold:Math.round(eHP(z.lvl)*2*pr)}];
+  /* bosses are progression walls: ~2.3x more health and much harder hits than before */
+  return [{name:z.boss[0],kind:'boss',boss:true,bossId:z.boss[2],c:z.boss[1],hp:Math.round(eHP(z.lvl)*50*pm),atk:Math.round(eATK(z.lvl)*2.2*pm),xp:Math.round(eHP(z.lvl)*5*pr),gold:Math.round(eHP(z.lvl)*3.5*pr)}];
  }
- return z.en.map(([n,k,c],i)=>({name:n,kind:k,c,hp:Math.round(eHP(z.lvl)*(0.9+i*0.12)*pm),atk:Math.round(eATK(z.lvl)*(0.9+i*0.1)*pm),
+ /* regular foes: modestly tougher than before (+25% hp, +15% atk) */
+ return z.en.map(([n,k,c],i)=>({name:n,kind:k,c,hp:Math.round(eHP(z.lvl)*(0.9+i*0.12)*1.25*pm),atk:Math.round(eATK(z.lvl)*(0.9+i*0.1)*1.15*pm),
   xp:Math.round(eHP(z.lvl)/2.6*pr),gold:Math.round((eHP(z.lvl)/6+2)*pr)}));
 }
 function zoneQuests(z){
@@ -400,9 +445,11 @@ const $=id=>document.getElementById(id);
 const raceOf=()=>RACES.find(r=>r.id===S.race);
 const classOf=()=>CLASSES.find(c=>c.id===S.cls);
 const gearSum=k=>{let t=0;for(const sl in S.gear){const g=S.gear[sl];if(g&&g[k])t+=g[k]}return t};
-/* one Active Scroll at a time — equipped in its own slot next to the trinket */
-const hasEnch=id=>S.activeScroll===id;
-const activeEnchs=()=>S.activeScroll?[ENCHS.find(e=>e.id===S.activeScroll)]:[];
+/* one Active Scroll at a time — {id,tier}, equipped in its own slot next to the trinket */
+const hasEnch=id=>!!(S.activeScroll&&S.activeScroll.id===id);
+const scrollPct=id=>hasEnch(id)?tierVal(id,S.activeScroll.tier)/100:0; /* fraction */
+const scrollRaw=id=>hasEnch(id)?tierVal(id,S.activeScroll.tier):0;     /* raw value (e.g. seconds) */
+const activeEnchs=()=>S.activeScroll?[enchOf(S.activeScroll.id)]:[];
 const gearScore=()=>Math.round(Object.values(S.gear).reduce((t,g)=>t+(g?g.power:0),0));
 const MAXPRESTIGE=10;
 const pMul=()=>1+(S.prestige||0)*0.4;   /* enemy hp/atk per prestige */
@@ -411,13 +458,13 @@ const pRew=()=>1+(S.prestige||0)*0.3;   /* xp/gold per prestige */
 const potCost=k=>Math.round((k==='hp'?20+S.lvl*7:15+S.lvl*6)*pRew());
 const heroMax=()=>Math.round((classOf().hp+S.lvl*14+gearSum('hp'))*(raceOf().hp||1));
 const manaMax=()=>Math.round(classOf().mana+S.lvl*5);
-const heroAtk=()=>Math.round((classOf().atk+S.lvl*2.6+gearSum('atk'))*(hasEnch('titan')?1.10:1));
+const heroAtk=()=>Math.round((classOf().atk+S.lvl*2.6+gearSum('atk'))*(1+scrollPct('titan')));
 const heroCrit=()=>classOf().crit+(raceOf().crit||0)+gearSum('crit');
 const xpNeed=l=>Math.round(38*Math.pow(l,1.5));
 const zoneOf=()=>ZONES[S.zone];
 const questsOf=()=>zoneQuests(zoneOf());
 const questOf=()=>questsOf()[Math.min(S.quest,questsOf().length-1)];
-const swiftMul=()=>hasEnch('swiftness')?1.12:1;
+const swiftMul=()=>1+scrollPct('swiftness');
 function freshState(name,race,cls){
  return {id:null,name,race,cls,lvl:1,xp:0,gold:0,scraps:0,prestige:0,zone:0,quest:0,qProg:0,
   gear:{weapon:null,armor:null,trinket:null},bag:[],scrolls:[],pots:{hp:2,mp:2},activeScroll:null,
@@ -438,6 +485,9 @@ function migrate(s){ /* fills fields missing from older saves */
   if(g.ench){if(!s.activeScroll)s.activeScroll=g.ench;else s.scrolls.push(g.ench);g.ench=null;}
  }
  (s.bag||[]).forEach(it=>{if(it.up===undefined)it.up=0;if(it.ench){s.scrolls.push(it.ench);it.ench=null;}});
+ /* legacy scrolls were plain id strings — convert to tier objects (grandfathered at Tier II) */
+ s.scrolls=(s.scrolls||[]).map(x=>typeof x==='string'?{id:x,tier:2}:x);
+ if(typeof s.activeScroll==='string')s.activeScroll={id:s.activeScroll,tier:2};
  return s;
 }
 /* the road east is open when this zone's quest chain (or boss) is done AND you meet the next zone's level */
@@ -893,7 +943,7 @@ function healHero(amt,silent){
 }
 function hurtHero(dmg,label){
  if(hero.dead)return;
- dmg=Math.round(dmg*(hasEnch('warding')?0.88:1));
+ dmg=Math.round(dmg*(1-scrollPct('warding')));
  hero.hp-=dmg;hero.hurt=0.2;
  floatAt(hero.x,hero.y-26,'-'+dmg+(label?' '+label:''),'#ff8a7a');
  burst(hero.x,hero.y-10,'#ff8a7a',4,60);
@@ -915,8 +965,8 @@ function heroBasicAttack(en,dt){
 function landHit(en,dmg,crit,label,basic){
  if(en.dead||en.hidden)return;
  if(basic){
-  if(hasEnch('flames')){const b=Math.max(1,Math.round(dmg*0.15));en.hp-=b;floatAt(en.x+10,en.y-en.r-24,'+'+b+'🔥','#ff9a4a');}
-  if(hasEnch('frostbite'))en.slowT=Math.max(en.slowT,1.5);
+  if(hasEnch('flames')){const b=Math.max(1,Math.round(dmg*scrollPct('flames')));en.hp-=b;floatAt(en.x+10,en.y-en.r-24,'+'+b+'🔥','#ff9a4a');}
+  if(hasEnch('frostbite'))en.slowT=Math.max(en.slowT,scrollRaw('frostbite'));
  }
  applyDmg(en,dmg,label,crit);
  sfx.hit();
@@ -1002,11 +1052,11 @@ function killEnemy(en){
  sfx.die();
  burst(en.x,en.y-10,en.c,12,90,true);
  const r=raceOf();
- let gold=Math.round(en.gold*(r.gold||1)*(hasEnch('fortune')?1.25:1));
+ let gold=Math.round(en.gold*(r.gold||1)*(1+scrollPct('fortune')));
  S.gold+=gold;
  if(S.lvl<MAXLVL)S.xp+=en.xp;
  if(r.leech)healHero(heroMax()*r.leech,true);
- if(hasEnch('reaper'))healHero(heroMax()*0.05,true);
+ if(hasEnch('reaper'))healHero(heroMax()*scrollPct('reaper'),true);
  floatAt(en.x,en.y-en.r-14,'+'+gold+' ◉','#ffd76a');
  log(`Slew <span class="imp">${en.name}</span> — +${en.xp} xp, +${gold} gold.`);
  // drops
@@ -1018,17 +1068,17 @@ function killEnemy(en){
  }
  if(Math.random()<(en.boss?1:0.10)){S.pots.hp++;floatAt(en.x,en.y-en.r-30,'+HP Potion','#ff8a8a');}
  else if(Math.random()<0.09){S.pots.mp++;floatAt(en.x,en.y-en.r-30,'+Mana Potion','#8fa8ef');}
- if(Math.random()<(en.boss?0.25:0.01)){ /* scrolls are now a rare prize */
+ if(Math.random()<(en.boss?0.25:0.01)){ /* scrolls are now a rare prize — always Tier I */
   const e=ENCHS[Math.floor(Math.random()*ENCHS.length)];
-  S.scrolls.push(e.id);
-  log(`Rare find: <span class="lscroll">${e.n}</span> — open the Bag to equip it.`,'loot');
+  S.scrolls.push({id:e.id,tier:1});
+  log(`Rare find: <span class="lscroll">${e.n} I</span> — combine duplicates in the Bag to forge higher tiers.`,'loot');
  }
  if(en.boss){
   /* the boss stays dead — forever */
   S.bossDead[S.zone]=true;
-  S.scraps+=25;
-  floatAt(en.x,en.y-en.r-44,'+25 ⚙','#a8bcb0');
-  log(`<span class="imp">${en.name} will never rise again.</span> +25 Scraps.`);
+  S.scraps+=40;
+  floatAt(en.x,en.y-en.r-44,'+40 ⚙','#a8bcb0');
+  log(`<span class="imp">${en.name} will never rise again.</span> +40 Scraps.`);
   /* despawn any remaining adds */
   enemies.forEach(a=>{if(a.add&&!a.dead){a.dead=true;a.deadT=0;burst(a.x,a.y,a.c,6,70);}});
  }
@@ -1097,6 +1147,7 @@ function doPrestige(){
  sfx.level();
  stageMsg('✦ Prestige '+S.prestige+' — the realm hardens against you.',3200);
  log(`<span class="imp">Prestige ${S.prestige}!</span> Every foe in Eastvale grows stronger. The march begins anew.`);
+ publishLB(S,true);
  openTab('battle');
 }
  
@@ -1279,11 +1330,11 @@ function update(dt){
  for(const k in hero.buff)if(hero.buff[k])hero.buff[k].t-=dt;
  // mana regen (faster out of combat)
  const inCombat=hero.target||enemies.some(e=>!e.dead&&e.state==='chase');
- hero.mana=Math.min(manaMax(),hero.mana+(2+S.lvl*0.15)*(hasEnch('clarity')?1.6:1)*(inCombat?1:2.4)*dt);
+ hero.mana=Math.min(manaMax(),hero.mana+(2+S.lvl*0.15)*(1+scrollPct('clarity'))*(inCombat?1:2.4)*dt);
  // regen passives
  hero.regenTick+=dt;
  if(hero.regenTick>=1){hero.regenTick=0;
-  if(hasEnch('mending')&&!hero.dead)healHero(heroMax()*0.01,true);
+  if(hasEnch('mending')&&!hero.dead)healHero(heroMax()*scrollPct('mending'),true);
  }
  if(hero.hotT>0){hero.hotT-=dt;hero.hotTick+=dt;
   if(hero.hotTick>=1){hero.hotTick=0;healHero(heroMax()*hero.hotAmt);sparkles(hero.x,hero.y-14,'#8ae08a',4);}
@@ -1373,7 +1424,7 @@ function update(dt){
     if(en.cd<=0){en.cd=en.boss?1.5:1.15;en.swing=0.2;
      const dmg=hurtHero(en.atk*(0.85+Math.random()*0.3));
      sfx.hit();
-     if(hasEnch('thorns')&&!en.dead){const t=Math.max(1,Math.round(dmg*0.25));en.hp-=t;floatAt(en.x,en.y-en.r-14,t+' 🌵','#9adf9a');if(en.hp<=0)killEnemy(en);}
+     if(hasEnch('thorns')&&!en.dead){const t=Math.max(1,Math.round(dmg*scrollPct('thorns')));en.hp-=t;floatAt(en.x,en.y-en.r-14,t+' 🌵','#9adf9a');if(en.hp<=0)killEnemy(en);}
     }
    }
   }else if(en.state==='return'){
@@ -1871,12 +1922,12 @@ function renderHero(){
      :`<div class="ss">— empty —</div>`)+`</div>`;
  }).join('');
  /* Active Scroll slot — sits right next to the trinket */
- const asc=S.activeScroll?ENCHS.find(e=>e.id===S.activeScroll):null;
+ const asc=S.activeScroll?enchOf(S.activeScroll.id):null;
  slotsHtml+=`<div class="slot" style="border-color:${asc?asc.glow+'66':'var(--line)'}"><div class="ss" style="text-transform:uppercase;letter-spacing:1px">Scroll</div>`+
-  (asc?`<div class="en"><span class="glowdot" style="background:${asc.glow};box-shadow:0 0 6px ${asc.glow}"></span>${asc.n.replace('Scroll of ','')}</div>
-   <div class="ss">${asc.d}</div>
+  (asc?`<div class="en"><span class="glowdot" style="background:${asc.glow};box-shadow:0 0 6px ${asc.glow}"></span>${asc.n.replace('Scroll of ','')} ${TIERN[(S.activeScroll.tier||1)-1]}</div>
+   <div class="ss">${tierDesc(S.activeScroll.id,S.activeScroll.tier)}</div>
    <button class="upbtn" id="unScroll">Unequip</button>`
-   :`<div class="ss">— no scroll —</div><div class="ss" style="margin-top:4px">Rare loot — or gamble for one at the Trader.</div>`)+`</div>`;
+   :`<div class="ss">— no scroll —</div><div class="ss" style="margin-top:4px">Rare loot — combine duplicates in the Bag to forge higher tiers.</div>`)+`</div>`;
  $('slotRow').innerHTML=slotsHtml;
  document.querySelectorAll('[data-up]').forEach(b=>b.onclick=()=>{
   const g=S.gear[b.dataset.up];
@@ -1940,25 +1991,49 @@ function renderMap(){
 }
 function renderBag(){
  $('bagWallet').innerHTML=walletStr();
- // scrolls
+ // scrolls — grouped by type + tier, with combining
  if(S.scrolls.length){
-  $('scrollSec').innerHTML='<div class="ptitle" style="font-size:14px;margin-bottom:8px">Scrolls</div>'+S.scrolls.map((id,i)=>{
-   const e=ENCHS.find(x=>x.id===id);
-   return `<div class="card item"><div><div class="sn" style="color:#d9a0ef;font-size:13px;font-weight:600"><span class="glowdot" style="background:${e.glow};box-shadow:0 0 6px ${e.glow}"></span>${e.n}</div>
-    <div class="ss" style="color:var(--dim);font-size:11px">${e.d}</div></div>
-    <div class="btns"><button class="sbtn gold" data-sc="${i}">${S.activeScroll?'Swap in':'Equip'}</button></div></div>`;
+  const groups={};
+  S.scrolls.forEach(sc=>{const k=sc.id+':'+sc.tier;(groups[k]=groups[k]||{id:sc.id,tier:sc.tier,n:0}).n++;});
+  const list=Object.values(groups).sort((a,b)=>a.id.localeCompare(b.id)||a.tier-b.tier);
+  $('scrollSec').innerHTML='<div class="ptitle" style="font-size:14px;margin-bottom:8px">Scrolls</div>'+
+   '<div class="ss" style="color:var(--dim);font-size:10.5px;margin-bottom:8px">Combine two identical scrolls to forge the next tier — the effect doubles (up to Tier IV).</div>'+
+   list.map(g=>{
+   const e=enchOf(g.id);
+   return `<div class="card item"><div><div class="sn" style="color:#d9a0ef;font-size:13px;font-weight:600"><span class="glowdot" style="background:${e.glow};box-shadow:0 0 6px ${e.glow}"></span>${e.n} ${TIERN[g.tier-1]}${g.n>1?` <span style="color:var(--dim)">×${g.n}</span>`:''}</div>
+    <div class="ss" style="color:var(--dim);font-size:11px">${tierDesc(g.id,g.tier)}</div></div>
+    <div class="btns">
+     ${g.n>=2&&g.tier<MAXTIER?`<button class="sbtn scrapb" data-comb="${g.id}:${g.tier}">⚗ Combine → ${TIERN[g.tier]}</button>`:''}
+     <button class="sbtn gold" data-sceq="${g.id}:${g.tier}">${S.activeScroll?'Swap in':'Equip'}</button>
+    </div></div>`;
   }).join('');
-  document.querySelectorAll('[data-sc]').forEach(b=>b.onclick=()=>{
-   const i=+b.dataset.sc,e=ENCHS.find(x=>x.id===S.scrolls[i]);
-   S.scrolls.splice(i,1);
+  const takeScroll=(id,tier)=>{const i=S.scrolls.findIndex(x=>x.id===id&&x.tier===tier);return i>=0?S.scrolls.splice(i,1)[0]:null;};
+  document.querySelectorAll('[data-sceq]').forEach(b=>b.onclick=()=>{
+   const [id,t]=b.dataset.sceq.split(':'),tier=+t;
+   const sc=takeScroll(id,tier);if(!sc)return;
    if(S.activeScroll)S.scrolls.push(S.activeScroll);
-   S.activeScroll=e.id;
-   log(`<span class="lscroll">${e.n}</span> now burns in your Active Scroll slot.`);
+   S.activeScroll=sc;
+   log(`<span class="lscroll">${enchOf(id).n} ${TIERN[tier-1]}</span> now burns in your Active Scroll slot.`);
    sfx.loot();renderBag();save();
+  });
+  document.querySelectorAll('[data-comb]').forEach(b=>b.onclick=()=>{
+   const [id,t]=b.dataset.comb.split(':'),tier=+t;
+   if(takeScroll(id,tier)&&takeScroll(id,tier)){
+    S.scrolls.push({id,tier:tier+1});
+    sfx.forge();
+    sparkles(hero.x,hero.y-14,enchOf(id).glow,10);
+    log(`Forged <span class="lscroll">${enchOf(id).n} ${TIERN[tier]}</span> from two lesser scrolls.`,'loot');
+    stageMsg('⚗ '+enchOf(id).n+' '+TIERN[tier]+' forged!',1800);
+    renderBag();save();
+   }
   });
  }else $('scrollSec').innerHTML='';
  if(!S.bag.length){$('bagList').innerHTML='<div class="card" style="color:var(--dim);font-size:12px">The bag is empty. Gear, potions and scrolls drop from foes — bosses always drop. Sell spares for gold, or scrap them for ⚙ Scraps to upgrade your gear.</div>';return;}
- $('bagList').innerHTML='<div class="ptitle" style="font-size:14px;margin-bottom:8px">Gear</div>'+S.bag.map((it,i)=>`
+ const totalScrap=S.bag.reduce((t,it)=>t+scrapVal(it),0);
+ $('bagList').innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+   <div class="ptitle" style="font-size:14px;margin:0">Gear</div>
+   <button class="sbtn scrapb" id="scrapAll">⚙ Scrap All +${totalScrap}⚙</button>
+  </div>`+S.bag.map((it,i)=>`
   <div class="card item">
    <div><div class="sn r-${it.rar}" style="font-size:13px;font-weight:600">${it.name}</div>
    <div class="ss" style="color:var(--dim);font-size:11px">${it.slot} · ${itemStr(it)}</div></div>
@@ -1983,6 +2058,22 @@ function renderBag(){
   log(`Scrapped <span class="l${it.rar}">${it.name}</span> — +${scrapVal(it)} ⚙.`);
   renderBag();renderHUD();save();
  });
+ const sa=$('scrapAll');
+ if(sa)sa.onclick=()=>{
+  if(!sa.dataset.armed){
+   sa.dataset.armed='1';
+   sa.textContent='Confirm — scrap everything?';
+   sa.style.color='#ff8a7a';sa.style.borderColor='#a05a5a';
+   setTimeout(()=>{if(sa.isConnected){delete sa.dataset.armed;sa.textContent=`⚙ Scrap All +${S.bag.reduce((t,it)=>t+scrapVal(it),0)}⚙`;sa.style.color='';sa.style.borderColor='';}},3000);
+   return;
+  }
+  const total=S.bag.reduce((t,it)=>t+scrapVal(it),0),n=S.bag.length;
+  S.scraps+=total;S.bag=[];
+  sfx.forge();
+  log(`Scrapped ${n} items — +${total} ⚙.`,'loot');
+  stageMsg('⚙ Scrapped '+n+' items for '+total+' Scraps',1800);
+  renderBag();renderHUD();save();
+ };
 }
 /* --- Gamble Chest opening ceremony --- */
 function spawnChestParts(color,n){
@@ -2038,11 +2129,11 @@ function openChest(){
  sfx.buy();
  const r=Math.random();
  let fxInfo;
- if(r<0.06){ /* rare: a scroll */
+ if(r<0.06){ /* rare: a scroll — always Tier I */
   const e=ENCHS[Math.floor(Math.random()*ENCHS.length)];
-  S.scrolls.push(e.id);
-  fxInfo={icon:'📜',tier:'Scroll of Power',name:e.n,color:e.glow,sub:e.d,big:true};
-  log(`Gamble Chest: <span class="lscroll">${e.n}</span>!`,'loot');
+  S.scrolls.push({id:e.id,tier:1});
+  fxInfo={icon:'📜',tier:'Scroll · Tier I',name:e.n,color:e.glow,sub:tierDesc(e.id,1)+' Combine duplicates to forge higher tiers.',big:true};
+  log(`Gamble Chest: <span class="lscroll">${e.n} I</span>!`,'loot');
  }else{ /* mostly weak gear, tiny chance of greatness */
   const rar=r<0.66?'common':r<0.90?'fine':r<0.98?'rare':'epic';
   const it=rollItem(rar);
@@ -2095,6 +2186,8 @@ async function save(){
  if(!S||!S.id)return;
  memChars[S.id]=JSON.stringify(S);
  try{if(window.storage)await window.storage.set('eastvale-char-'+S.id,memChars[S.id]);}catch(e){}
+ if(FB.ready&&FB.user){cloudPushChar(S);publishLB(S);}
+ else publishLB(S); /* shared-storage leaderboard fallback (throttled) */
 }
 async function loadRoster(){
  try{if(window.storage){const r=await window.storage.get('eastvale-roster');if(r&&r.value)return JSON.parse(r.value);}}catch(e){}
@@ -2113,6 +2206,146 @@ async function legacyLoad(){ /* import the old single-save format as the first r
  return null;
 }
  
+/* ==================== CLOUD — Firebase accounts, sync & leaderboard ====================
+   TO ENABLE ACCOUNTS + CLOUD SAVES:
+   1. Create a project at console.firebase.google.com
+   2. Enable Authentication → Email/Password, and Cloud Firestore
+   3. Add a Web App and paste its config object into FIREBASE_CONFIG below
+   4. Firestore rules (basic): allow players/{uid}/** read/write if request.auth.uid==uid;
+      allow leaderboard/{doc} read to all, write if signed in.
+   With an empty config the game runs fully offline with local saves, and the
+   leaderboard falls back to the artifact's shared storage (visible to everyone
+   using this artifact). */
+const FIREBASE_CONFIG={
+ apiKey:"AIzaSyCSKRMWkmffIttRoP6kvYUQ04qk8mVFCSs",
+ authDomain:"riptide-14d98.firebaseapp.com",
+ projectId:"riptide-14d98",
+ storageBucket:"riptide-14d98.firebasestorage.app",
+ messagingSenderId:"892097723800",
+ appId:"1:892097723800:web:38b35a2c005acfa63a3fed",
+ measurementId:"G-1F59M1QS5Z"
+};
+const FB={ready:false,user:null,auth:null,db:null,tried:false,lastPub:0};
+function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=()=>rej(new Error('load failed '+src));document.head.appendChild(s);});}
+async function initFirebase(){
+ if(FB.tried)return FB.ready;
+ FB.tried=true;
+ if(!FIREBASE_CONFIG.apiKey)return false;
+ try{
+  const v='10.12.2';
+  await loadScript(`https://cdnjs.cloudflare.com/ajax/libs/firebase/${v}/firebase-app-compat.min.js`);
+  await loadScript(`https://cdnjs.cloudflare.com/ajax/libs/firebase/${v}/firebase-auth-compat.min.js`);
+  await loadScript(`https://cdnjs.cloudflare.com/ajax/libs/firebase/${v}/firebase-firestore-compat.min.js`);
+  firebase.initializeApp(FIREBASE_CONFIG);
+  FB.auth=firebase.auth();FB.db=firebase.firestore();FB.ready=true;
+  FB.auth.onAuthStateChanged(u=>{FB.user=u;updateAcctUI();if(u)cloudPullRoster();});
+ }catch(e){console.warn('Firebase unavailable:',e);FB.ready=false;}
+ updateAcctUI();
+ return FB.ready;
+}
+async function fbSignIn(create){
+ const em=$('fbEmail').value.trim(),pw=$('fbPass').value;
+ $('fbErr').textContent='';
+ if(!em||!pw){$('fbErr').textContent='Enter an email and password.';return;}
+ const ok=await initFirebase();
+ if(!ok){$('fbErr').textContent=FIREBASE_CONFIG.apiKey?'Cloud unreachable from here — host the file on the web to sign in.':'Cloud not configured — paste your Firebase config into the code first.';return;}
+ try{
+  if(create)await FB.auth.createUserWithEmailAndPassword(em,pw);
+  else await FB.auth.signInWithEmailAndPassword(em,pw);
+  $('acctForms').style.display='none';
+ }catch(e){$('fbErr').textContent=((e&&e.message)||'Sign-in failed.').replace('Firebase: ','');}
+}
+async function cloudPushChar(ch){
+ if(!(FB.ready&&FB.user))return;
+ try{
+  const uid=FB.user.uid;
+  await FB.db.collection('players').doc(uid).collection('chars').doc(ch.id).set(JSON.parse(JSON.stringify(ch)));
+  const ids=await loadRoster();
+  await FB.db.collection('players').doc(uid).set({roster:ids},{merge:true});
+ }catch(e){}
+}
+async function cloudPullRoster(){
+ if(!(FB.ready&&FB.user))return;
+ try{
+  const snap=await FB.db.collection('players').doc(FB.user.uid).collection('chars').get();
+  const ids=await loadRoster();
+  let changed=false;
+  for(const doc of snap.docs){
+   const ch=migrate(doc.data());
+   if(!ch||!ch.id)continue;
+   const local=await loadChar(ch.id);
+   if(!local||lbScore(ch)>=lbScore(local)){ /* cloud wins if it's further along */
+    memChars[ch.id]=JSON.stringify(ch);
+    try{if(window.storage)await window.storage.set('eastvale-char-'+ch.id,memChars[ch.id]);}catch(e){}
+   }
+   if(!ids.includes(ch.id)){ids.push(ch.id);changed=true;}
+  }
+  if(changed)await saveRoster(ids);
+  if($('select').classList.contains('open'))renderSelect();
+ }catch(e){console.warn('cloud pull failed',e);}
+}
+/* --- global leaderboard: name, level, prestige, gear score --- */
+const lbScore=ch=>(ch.prestige||0)*1e6+(ch.lvl||1)*1e3+charGearScore(ch);
+async function publishLB(ch,force){
+ if(!ch||!ch.id)return;
+ const now=Date.now();
+ if(!force&&now-FB.lastPub<45000)return;
+ FB.lastPub=now;
+ const entry={name:(ch.name||'?').slice(0,14),lvl:ch.lvl,prestige:ch.prestige||0,gs:charGearScore(ch),score:lbScore(ch),cid:ch.id,t:now};
+ if(FB.ready&&FB.user){
+  try{await FB.db.collection('leaderboard').doc(FB.user.uid+'_'+ch.id).set(entry);}catch(e){}
+ }else{
+  try{if(window.storage)await window.storage.set('lb:'+ch.id,JSON.stringify(entry),true);}catch(e){}
+ }
+}
+async function fetchLB(){
+ if(FB.ready){
+  try{
+   const q=await FB.db.collection('leaderboard').orderBy('score','desc').limit(50).get();
+   return q.docs.map(d=>d.data());
+  }catch(e){}
+ }
+ try{
+  if(window.storage){
+   const r=await window.storage.list('lb:',true);
+   const keys=((r&&r.keys)||[]).slice(0,60);
+   const out=[];
+   for(const k of keys){
+    try{const g=await window.storage.get(k,true);if(g&&g.value)out.push(JSON.parse(g.value));}catch(e){}
+   }
+   return out.sort((a,b)=>(b.score||0)-(a.score||0)).slice(0,50);
+  }
+ }catch(e){}
+ return [];
+}
+const esc=t=>String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+async function showLeaderboard(){
+ $('lbFx').classList.add('open');
+ $('lbList').innerHTML='<div class="cl">Consulting the heralds…</div>';
+ if(S&&S.id)await publishLB(S,true);
+ const rows=await fetchLB();
+ $('lbList').innerHTML=rows.length?rows.map((e,i)=>`
+  <div class="lbrow ${S&&e.cid===S.id?'me':''}">
+   <div class="lbrank">${i+1}</div>
+   <div class="lbname">${esc(e.name||'?')}${e.prestige?` <span class="pstar">✦${e.prestige}</span>`:''}</div>
+   <div class="lbmeta">Lv ${e.lvl||1} · ⚔ ${e.gs||0}</div>
+  </div>`).join('')
+  :'<div class="cl">No champions recorded yet — be the first to claim a place.</div>';
+}
+function updateAcctUI(){
+ const info=$('acctInfo');if(!info)return;
+ if(FB.user){
+  info.textContent='☁ Signed in as '+(FB.user.email||'account')+' — heroes sync to the cloud.';
+  $('fbToggle').style.display='none';$('fbOut').style.display='inline-block';
+ }else if(FIREBASE_CONFIG.apiKey){
+  info.textContent='Cloud saves available — sign in to sync heroes across devices.';
+  $('fbToggle').style.display='inline-block';$('fbOut').style.display='none';
+ }else{
+  info.textContent='Playing locally. To enable accounts & cloud saves, paste your Firebase config into the code (see the CLOUD comment).';
+  $('fbToggle').style.display='inline-block';$('fbOut').style.display='none';
+ }
+}
+ 
 /* ==================== CHARACTER SELECT ==================== */
 function drawPortrait(cnv,ch){
  const g=cnv.getContext('2d'),W=cnv.width,H=cnv.height;
@@ -2122,7 +2355,7 @@ function drawPortrait(cnv,ch){
  g.fillStyle=bg;g.fillRect(0,0,W,H);
  g.fillStyle='rgba(217,164,65,0.06)';
  g.beginPath();g.ellipse(W/2,H*0.3,W*0.5,H*0.32,0,0,7);g.fill();
- const sc=ch.activeScroll?ENCHS.find(e=>e.id===ch.activeScroll):null;
+ const sc=ch.activeScroll?enchOf(ch.activeScroll.id||ch.activeScroll):null;
  g.save();g.translate(W/2,H*0.72);g.scale(2.1,2.1);
  g.fillStyle='rgba(0,0,0,0.3)';g.beginPath();g.ellipse(0,7,11,4.5,0,0,7);g.fill();
  if(sc){g.strokeStyle=sc.glow;g.globalAlpha=0.55;g.lineWidth=1;g.beginPath();g.ellipse(0,6,13,5.5,0,0,7);g.stroke();g.globalAlpha=1;}
@@ -2185,6 +2418,7 @@ function showSelect(){
  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('open'));
  $('create').style.display='none';
  $('select').classList.add('open');
+ updateAcctUI();
  renderSelect();
 }
 function showCreate(firstEver){
@@ -2215,6 +2449,13 @@ $('startBtn').onclick=async()=>{
 $('createBack').onclick=()=>{$('create').style.display='none';showSelect();};
 $('newCharBtn').onclick=()=>showCreate(false);
 $('charSelBtn').onclick=async()=>{await save();showSelect();};
+$('fbToggle').onclick=()=>{const f=$('acctForms');f.style.display=f.style.display==='none'?'block':'none';initFirebase();};
+$('fbLogin').onclick=()=>fbSignIn(false);
+$('fbSignup').onclick=()=>fbSignIn(true);
+$('fbOut').onclick=()=>{if(FB.auth)FB.auth.signOut();};
+$('lbBtn').onclick=showLeaderboard;
+$('lbBtn2').onclick=showLeaderboard;
+$('lbClose').onclick=()=>$('lbFx').classList.remove('open');
 $('autoBtn').onclick=()=>{S.auto=!S.auto;renderHUD();save();};
 $('nextBtn').onclick=()=>{
  if(!portalIsOpen())return;
@@ -2269,6 +2510,7 @@ function frame(t){
 resize();
 requestAnimationFrame(frame);
 (async()=>{
+ if(FIREBASE_CONFIG.apiKey)initFirebase(); /* restores a persisted sign-in if any */
  let roster=await loadRoster();
  if(!roster.length){
   /* one-time import of the old single-hero save into the new roster */
